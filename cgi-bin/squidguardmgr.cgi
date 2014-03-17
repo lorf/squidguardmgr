@@ -49,6 +49,7 @@ our $SQUID_WRAPPER = '/var/www/squidguardmgr/squid_wrapper';
 our $C_ICAP_SOCKET = '/var/run/c-icap/c-icap.ctl';
 our $KEEP_DIFF  = 1;
 our $BLUMASK    = 0027;
+our $ACCESS_CONF   = 1;
 
 # Configuration file
 my $SGM_CONF    = 'squidguardmgr.conf';
@@ -207,7 +208,7 @@ if ($ACTION eq 'squidclamav') {
 
 	# Read configuration from file squidclamav.conf
 	&sc_get_configuration();
-	if ($VIEW eq 'globals') {
+	if ($VIEW eq 'globals' and $ACCESS_CONF) {
 		&sc_show_globals();
 	} elsif ($VIEW eq 'whitelists') {
 		&sc_show_whitelist();
@@ -217,7 +218,7 @@ if ($ACTION eq 'squidclamav') {
 		&sc_show_trustclient();
 	} elsif ($VIEW eq 'aborts') {
 		&sc_show_abort();
-	} elsif ($VIEW eq 'dump') {
+	} elsif ($VIEW eq 'dump' and $ACCESS_CONF) {
 		&sc_show_config();
 	} else {
 		print "<table width=\"100%\"><tr><td>\n";
@@ -357,7 +358,7 @@ print qq{
 
 if ($ACTION eq 'blacklists') {
 	&show_blacklists();
-} elsif ($ACTION eq 'globals') {
+} elsif ($ACTION eq 'globals' and $ACCESS_CONF) {
 	&show_globals();
 } elsif ($ACTION eq 'sources') {
 	&show_sources();
@@ -381,7 +382,7 @@ if ($ACTION eq 'blacklists') {
 	&show_acl();
 } elsif ($ACTION eq 'aclsedit') {
 	&edit_acls($ACL);
-} elsif ($ACTION eq 'dump') {
+} elsif ($ACTION eq 'dump' and $ACCESS_CONF) {
 	&show_config();
 } elsif ($ACTION eq 'logs') {
 	&show_logs();
@@ -656,7 +657,8 @@ sub smgr_header
 	print "<input type=\"hidden\" name=\"action\" value=\"$ACTION\" />\n";
 	print "<input type=\"hidden\" name=\"lang\" value=\"$LANG\" />\n";
 	print "<table width=\"100%\" class=\"header\"><tr><td class=\"header\"><a href=\"\" onclick=\"document.location.href='$ENV{SCRIPT_NAME}'; return false;\">$IMG_LOGO</a></td><td class=\"header\">\n<hr>\n";
-	print "<a href=\"\" onclick=\"document.forms[0].oldvalue.value=''; document.forms[0].action.value='globals'; document.forms[0].submit(); return false;\">", &translate('Globals'), "</a> |\n";
+	print "<a href=\"\" onclick=\"document.forms[0].oldvalue.value=''; document.forms[0].action.value='globals'; document.forms[0].submit(); return false;\">", &translate('Globals'), "</a> |\n"
+		if $ACCESS_CONF;
 	print "<a href=\"\" onclick=\"document.forms[0].oldvalue.value=''; document.forms[0].action.value='times'; document.forms[0].submit(); return false;\">", &translate('Schedules'), "</a> |\n";
 	print "<a href=\"\" onclick=\"document.forms[0].oldvalue.value=''; document.forms[0].action.value='sources'; document.forms[0].submit(); return false;\">", &translate('Sources'), "</a> |\n";
 	print "<a href=\"\" onclick=\"document.forms[0].oldvalue.value=''; document.forms[0].action.value='rewrites'; document.forms[0].submit(); return false;\">", &translate('Url rewriting'), "</a> |\n";
@@ -664,7 +666,8 @@ sub smgr_header
 	print "<a href=\"\" onclick=\"document.forms[0].oldvalue.value=''; document.forms[0].action.value='acl'; document.forms[0].submit(); return false;\">", &translate('ACLs'), "</a> |\n";
 	print "<a href=\"\" onclick=\"document.forms[0].oldvalue.value=''; document.forms[0].action.value='blacklists'; document.forms[0].submit(); return false;\">", &translate('Manage Lists'), "</a> |\n";
 	print "<br><hr>\n";
-	print "<a href=\"\" onclick=\"document.forms[0].oldvalue.value=''; document.forms[0].action.value='dump'; document.forms[0].submit(); return false;\">", &translate('View Configuration'), "</a> | \n";
+	print "<a href=\"\" onclick=\"document.forms[0].oldvalue.value=''; document.forms[0].action.value='dump'; document.forms[0].submit(); return false;\">", &translate('View Configuration'), "</a> | \n"
+		if $ACCESS_CONF;
 	print "<a href=\"\" onclick=\"document.forms[0].oldvalue.value=''; document.forms[0].action.value='logs'; document.forms[0].submit(); return false;\">", &translate('View logs'), "</a> |\n";
 	if ($SQUIDCLAMAV && (lc($SQUIDCLAMAV) ne 'off')) {
 		print "<a href=\"\" onclick=\"window.open('", $CGI->escapeHTML("$ENV{SCRIPT_NAME}?action=squidclamav&view=&lang=$LANG"), "','squidclamav','scrollbars=yes,status=no,toolbar=no,width=900,height=800,resizable=yes,screenX=1,screenY=1,top=1,left=1'); return false;\" target=\"_new\">", &translate('SquidClamav'), "</a> |\n";
@@ -2689,7 +2692,7 @@ sub apply_change
 {
 
 	# Update Global variables
-	if (defined $CGI->param('dbhome')) {
+	if (defined $CGI->param('dbhome') and $ACCESS_CONF) {
 		foreach my $g (@GLOBALVAR) {
 			$CONFIG->{$g} = $CGI->param($g) || '';
 			if ($g eq 'dbhome' && !-d $CGI->param($g)) {
@@ -3616,13 +3619,15 @@ sub sc_smgr_header
 	print "<input type=\"hidden\" name=\"apply\" value=\"\" />\n";
 	print "<input type=\"hidden\" name=\"oldvalue\" value=\"\" />\n";
 	print "<table width=\"100%\" class=\"header\"><tr><td class=\"header\"><a href=\"\" onclick=\"document.location.href='$ENV{SCRIPT_NAME}'; return false;\">$IMG_LOGO</a></td><td class=\"header\">\n<hr>\n";
-	print "<a href=\"\" onclick=\"document.forms[0].view.value='globals'; document.forms[0].submit(); return false;\">", &translate('Globals'), "</a> |\n";
+	print "<a href=\"\" onclick=\"document.forms[0].view.value='globals'; document.forms[0].submit(); return false;\">", &translate('Globals'), "</a> |\n"
+		if $ACCESS_CONF;
 	print "<a href=\"\" onclick=\"document.forms[0].view.value='aborts'; document.forms[0].submit(); return false;\">", &translate('Virus Scanning'), "</a> |\n";
 	print "<a href=\"\" onclick=\"document.forms[0].view.value='whitelists'; document.forms[0].submit(); return false;\">", &translate('Whitelists'), "</a> |\n";
 	print "<a href=\"\" onclick=\"document.forms[0].view.value='trustusers'; document.forms[0].submit(); return false;\">", &translate('Trusted Users'), "</a> |\n";
 	print "<a href=\"\" onclick=\"document.forms[0].view.value='trustclients'; document.forms[0].submit(); return false;\">", &translate('Trusted Clients'), "</a> |\n";
 	print "<br><hr>\n";
-	print "<a href=\"\" onclick=\"document.forms[0].view.value='dump'; document.forms[0].submit(); return false;\">", &translate('View Configuration'), "</a> | \n";
+	print "<a href=\"\" onclick=\"document.forms[0].view.value='dump'; document.forms[0].submit(); return false;\">", &translate('View Configuration'), "</a> | \n"
+		if $ACCESS_CONF;
 	print "<a href=\"\" onclick=\"window.open('", $CGI->escapeHTML("$ENV{SCRIPT_NAME}?action=squidclamav&view=showlog&path=$CONFIG->{logfile}&lang=$LANG"), "','filewin','scrollbars=yes,status=no,toolbar=no,width=850,height=800,resizable=yes,screenX=1,screenY=1,top=1,left=1'); return false;\" target=\"_new\">", &translate('View log'), "</a> |\n" if ($CONFIG->{logfile} && -e $CONFIG->{logfile});
 	if ($SQUIDCLAMAV eq 'c-icap') {
 		print "<a href=\"\" onclick=\"document.forms[0].view.value='cicap'; document.forms[0].submit(); return false;\">", &translate('Reload c-icap'), "</a> |\n";
@@ -3915,7 +3920,7 @@ sub sc_apply_change
 {
 
 	# Update Global variables
-	if ($VIEW eq 'globals') {
+	if ($VIEW eq 'globals' and $ACCESS_CONF) {
 		foreach my $g (@SC_GLOBALVAR) {
 			if (defined $CGI->param($g)) {
 				$CONFIG->{$g} = $CGI->param($g);

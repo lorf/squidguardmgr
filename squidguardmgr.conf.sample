@@ -67,3 +67,5 @@ TAIL_LINES	1000
 # to be able to recover change after a fresh download of blocklists
 KEEP_DIFF       1
 
+# Allow access to global squidGuard and SquidClamav configuration variables
+ACCESS_CONF     1
