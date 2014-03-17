@@ -68,4 +68,4 @@ TAIL_LINES	1000
 KEEP_DIFF       1
 
 # Allow access to global squidGuard and SquidClamav configuration variables
-ACCESS_CONF     1
+ACCESS_CONF     yes
